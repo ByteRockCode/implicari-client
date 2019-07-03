@@ -1,6 +1,7 @@
 import React from 'react';
-import { Button, Col, Container, Row } from 'reactstrap';
 import styled from 'styled-components';
+import { Button, Col, Container, Row } from 'reactstrap';
+import { Link } from 'react-router-dom';
 
 import headerBackgroundUrl from './images/header-background.jpg';
 import classroomUrl from './images/classroom.jpg';
@@ -37,7 +38,7 @@ const Landing = () => (
 
         <Row>
           <Col className="mt-1" sm="6">
-            <Button tag="a" href="#" size="lg" color="dark" outline block>iniciar sesión</Button>
+            <Button tag={Link} to="/iniciar-sesion" size="lg" color="dark" outline block>iniciar sesión</Button>
           </Col>
           <Col className="mt-1" sm="6">
             <Button tag="a" href="#" size="lg" color="dark" block>registrarse</Button>
