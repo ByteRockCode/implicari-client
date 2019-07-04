@@ -1,42 +1,89 @@
-import React from 'react';
-import styled from 'styled-components';
-import { Button, Col, Container, Form, FormGroup, Input, Label, Row } from 'reactstrap';
-import { Link } from 'react-router-dom';
+import React, { useState, useCallback } from 'react';
+import gql from 'graphql-tag';
+import { Button, Form, FormGroup, Input, Label } from 'reactstrap';
+import { Mutation } from 'react-apollo';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 
-const Header = styled.header`
-  background-color: #DC3545;
-  padding: 2rem 0;
-  text-align: center;
+const TOKEN_AUTH = gql`
+  mutation tokenAuthMuttion($email: String!, $password: String!) {
+    tokenAuth(email: $email, password: $password) {
+      token
+    }
+  }
 `;
 
-const LinkHeader = styled(Link)`
-  color: inherit;
-  text-decoration: none;
 
-  &:hover {
-    color: inherit;
-    text-decoration: none;
-  }
-`
+const LoginForm = ({ tokenAuth, loading }) => {
 
-const LoginForm = () => (
-  <Form>
-    <FormGroup>
-      <Label for="email">Dirección de correo electrónico</Label>
-      <Input type="text" name="email" id="email" autoFocus />
-    </FormGroup>
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-    <FormGroup>
-      <Label for="password">Contraseña</Label>
-      <Input type="password" name="password" id="password" />
-    </FormGroup>
+  const submitCallback = useCallback(
+    (event) => {
+      event.preventDefault();
 
-    <br/>
+      tokenAuth({ variables: { email, password }})
+        .then(({ data }) => {
+          localStorage.setItem('token', data.tokenAuth.token);
+          return data;
+        })
+      ;
+    },
+    [email, password, tokenAuth],
+  );
 
-    <Button color="dark" block>iniciar sesión</Button>
-  </Form>
-)
+  return (
+    <Form onSubmit={submitCallback}>
+      <FormGroup>
+        <Label for="email">Dirección de correo electrónico</Label>
+        <Input
+          autoFocus
+          disabled={loading}
+          id="email"
+          onChange={(e) => setEmail(e.target.value)}
+          type="text"
+        />
+      </FormGroup>
+
+      <FormGroup>
+        <Label for="password">Contraseña</Label>
+        <Input
+          disabled={loading}
+          id="password"
+          onChange={(e) => setPassword(e.target.value)}
+          type="password"
+        />
+      </FormGroup>
+
+      <br/>
+
+      {loading ? (
+        <Button color="dark" block disabled>
+          <FontAwesomeIcon icon={faSpinner} spin />
+        </Button>
+      ) : (
+        <Button color="dark" block>iniciar sesión</Button>
+      )}
+    </Form>
+  );
+};
 
 
-export default LoginForm;
+const LoginFormMutation = () => {
+  return (
+    <Mutation mutation={TOKEN_AUTH}>
+      {(tokenAuth, { loading, error }) => (
+        <div>
+          <LoginForm tokenAuth={tokenAuth} loading={loading} />
+          {loading && <p>Loading...</p>}
+          {error && <p>Error :( Please try again</p>}
+        </div>
+      )}
+    </Mutation>
+  );
+};
+
+
+export default LoginFormMutation;
